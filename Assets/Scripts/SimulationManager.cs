@@ -15,13 +15,14 @@ public class SimulationManager : MonoBehaviour
 
         if (suelo == null)
         {
-            Debug.LogError("SimulationManager: no hay Suelo.");
+            UIManager.Instance?.Log("ERROR SimulationManager: no hay Suelo.");
             return;
         }
 
         if (npcSpawner == null)
             npcSpawner = maqueta.GetComponentInChildren<NPCSpawner>();
 
-        // simplemente dejar que el spawner haga su Start normal
+        UIManager.Instance?.Log("SimulationManager: Maqueta configurada (spawn desactivado/esperando).");
+        // El NPCSpawner seguirá su propio Start (está habilitado por GroundPlaneActivator)
     }
 }

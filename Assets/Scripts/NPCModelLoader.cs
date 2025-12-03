@@ -12,13 +12,13 @@ public class NPCModelLoader : MonoBehaviour
     {
         if (modelParent == null)
         {
-            Debug.LogError("NPCModelLoader: Falta modelParent");
+            UIManager.Instance?.Log("ERROR NPCModelLoader: Falta modelParent");
             return;
         }
 
         // borrar modelo anterior
         for (int i = modelParent.childCount - 1; i >= 0; i--)
-            Destroy(modelParent.GetChild(i).gameObject);
+            DestroyImmediate(modelParent.GetChild(i).gameObject);
 
         currentModel = Instantiate(modelPrefab, modelParent);
         currentModel.transform.localPosition = Vector3.zero;

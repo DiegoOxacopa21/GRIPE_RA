@@ -43,6 +43,10 @@ public class NPCController : MonoBehaviour
             animator = loader.GetModelAnimator();
             renderers = loader.GetModelRenderers();
         }
+        else
+        {
+            UIManager.Instance?.Log($"NPCController: No se encontró NPCModelLoader en {name}.");
+        }
     }
 
     void Update()
@@ -69,23 +73,7 @@ public class NPCController : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------
-    // DEBUG VISUAL CON CUBOS
-    // -------------------------------------------------------
-
-    public void DebugCube(Vector3 pos, Color color, float size = 0.3f, float duration = 2f)
-    {
-        GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        c.transform.position = pos + Vector3.up * 1.2f;
-        c.transform.localScale = Vector3.one * size;
-
-        Renderer r = c.GetComponent<Renderer>();
-        r.material.color = color;
-
-        Destroy(c, duration);
-    }
-
-    // -------------------------------------------------------
+    // -- SE QUITA la creación de cubos de debug; ahora se informa vía UIManager --
 
     public bool IsTalking()
     {
@@ -115,8 +103,8 @@ public class NPCController : MonoBehaviour
         {
             agent.SetDestination(hit.position);
 
-            // DEBUG cubo verde en destino
-            DebugCube(hit.position, Color.green, 0.25f, 2f);
+            // debug sencillo por UI
+            //UIManager.Instance?.Log($"NPCController: {name} -> nuevo destino: {hit.position.ToString("F3")}");
         }
     }
 
@@ -143,6 +131,8 @@ public class NPCController : MonoBehaviour
 
         animator.SetBool("IsTalking", true);
         animator.SetFloat("MoveSpeed", 0f);
+
+        //UIManager.Instance?.Log($"NPCController: {name} StartTalking.");
     }
 
     public void StopTalking()
@@ -153,6 +143,8 @@ public class NPCController : MonoBehaviour
 
         idleTimer = 0f;
         SetRandomDestination();
+
+        //UIManager.Instance?.Log($"NPCController: {name} StopTalking.");
     }
 
     // -------------------------------------------------------
@@ -165,13 +157,16 @@ public class NPCController : MonoBehaviour
 
         isInfected = true;
 
-        // Cubo ROJO debug infección
-        DebugCube(transform.position, Color.red, 0.5f, 3f);
+        UIManager.Instance?.Log($"NPCController: {name} Infectado.");
 
         if (renderers != null)
         {
             foreach (var r in renderers)
+            {
+                // clonar material para evitar instancias compartidas si quieres,
+                // pero por ahora mantenemos color directo (igual que antes)
                 r.material.color = infectedColor;
+            }
         }
     }
 }

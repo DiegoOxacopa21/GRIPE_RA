@@ -22,7 +22,7 @@ public class NPCSpawner : MonoBehaviour
         suelo = transform.Find("Suelo");
         if (suelo == null)
         {
-            Debug.LogError("NPCSpawner: No se encontró 'Suelo'.");
+            UIManager.Instance?.Log("ERROR NPCSpawner: No se encontró 'Suelo'.");
             return;
         }
 
@@ -43,7 +43,8 @@ public class NPCSpawner : MonoBehaviour
 
             if (ctrl == null || loader == null)
             {
-                Debug.LogError("NPCSpawner: NPC_Base necesita NPCController y NPCModelLoader.");
+                UIManager.Instance?.Log("ERROR NPCSpawner: NPC_Base necesita NPCController y NPCModelLoader.");
+                Destroy(npc);
                 continue;
             }
 
@@ -58,6 +59,8 @@ public class NPCSpawner : MonoBehaviour
             // iniciar movimiento
             ctrl.SetRandomDestination();
         }
+
+        UIManager.Instance?.Log($"NPCSpawner: Spawned {npcs.Count} NPC(s).");
     }
 
     Vector3 GetRandomPointOnNavMesh()
@@ -79,8 +82,10 @@ public class NPCSpawner : MonoBehaviour
 
         for (int i = 0; i < infectadosIniciales; i++)
         {
+            if (npcs.Count == 0) break;
             int index = Random.Range(0, npcs.Count);
             npcs[index].Infect();
+            UIManager.Instance?.Log($"NPCSpawner: Infectado inicial -> {npcs[index].name}");
         }
     }
 }

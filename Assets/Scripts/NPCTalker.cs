@@ -14,7 +14,7 @@ public class NPCTalker : MonoBehaviour
     {
         myController = GetComponentInParent<NPCController>();
         if (myController == null)
-            Debug.LogError("NPCTalker: No se encontró NPCController en el padre.");
+            UIManager.Instance?.Log("ERROR NPCTalker: No se encontró NPCController en el padre.");
     }
 
     void Update()
@@ -56,15 +56,20 @@ public class NPCTalker : MonoBehaviour
 
         timer = talkDuration;
 
-        // DEBUG CUBO conversación (azul)
-        Vector3 mid = (myController.transform.position + target.transform.position) / 2f;
-        myController.DebugCube(mid, Color.blue, 0.5f, 3f);
+        // DEBUG: informe al UIManager en vez de crear objetos 3D
+        //UIManager.Instance?.Log($"NPCTalker: Conversación iniciada entre '{myController.name}' y '{target.name}'.");
 
         // Contagio
         if (myController.isInfected && !target.isInfected)
+        {
             target.Infect();
+            UIManager.Instance?.Log($"NPCTalker: {myController.name} contagió a {target.name}.");
+        }
         else if (target.isInfected && !myController.isInfected)
+        {
             myController.Infect();
+            UIManager.Instance?.Log($"NPCTalker: {target.name} contagió a {myController.name}.");
+        }
     }
 
     void EndConversation()
@@ -72,8 +77,7 @@ public class NPCTalker : MonoBehaviour
         if (myController != null) myController.StopTalking();
         if (otherController != null) otherController.StopTalking();
 
-        // DEBUG cubo fin conversación (amarillo)
-        myController.DebugCube(myController.transform.position, Color.yellow, 0.4f, 2f);
+        //UIManager.Instance?.Log($"NPCTalker: Conversación finalizada para '{myController?.name}'.");
 
         isTalking = false;
         otherController = null;

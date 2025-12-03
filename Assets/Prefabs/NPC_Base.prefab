@@ -161,14 +161,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c166760bf90f621449c718cf26311846, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 3861776350478845486}
-  minSpeed: 0.05
-  maxSpeed: 0.12
-  isTalking: 0
+  wanderRadius: 1.2
+  minIdleTime: 1
+  maxIdleTime: 2
   isInfected: 0
-  animator: {fileID: 0}
-  infectionRadius: 0.2
-  infectionCooldown: 2
+  infectedColor: {r: 0.82641506, g: 0, b: 0, a: 0.7372549}
 --- !u!114 &1531681124139111915
 MonoBehaviour:
   m_ObjectHideFlags: 0
