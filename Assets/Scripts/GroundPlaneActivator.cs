@@ -45,8 +45,8 @@ public class GroundPlaneActivator : MonoBehaviour
         // 4. Desactivar PlaneFinder (previsualización + detección)
         planeFinder.gameObject.SetActive(false);
 
-        UIDebugger.Instance?.Log("GroundPlaneActivator: Simulación activada correctamente.");
-        UIDebugger.Instance?.Log(" Simulación iniciada por Ground Plane.");
+        UIManager.Instance?.Log("GroundPlaneActivator: Simulación activada correctamente.");
+        UIManager.Instance?.Log(" Simulación iniciada por Ground Plane.");
 
     }
 }

@@ -18,7 +18,7 @@ public class NPCSpawner : MonoBehaviour
 
     void Start()
     {
-        UIDebugger.Instance?.Log("NPCSpawner: Start ejecutado");
+        UIManager.Instance?.Log("NPCSpawner: Start ejecutado");
         suelo = transform.Find("Suelo");
         if (suelo == null)
         {

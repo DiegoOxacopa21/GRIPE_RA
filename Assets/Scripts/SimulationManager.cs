@@ -6,7 +6,7 @@ public class SimulationManager : MonoBehaviour
 
     void Start()
     {
-        UIDebugger.Instance?.Log("SimulationManager: Start ejecutado");
+        UIManager.Instance?.Log("SimulationManager: Start ejecutado");
     }
 
     public void ConfigurarDespuesDeInstanciar(GameObject maqueta)
