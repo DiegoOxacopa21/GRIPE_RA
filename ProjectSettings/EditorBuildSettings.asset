@@ -9,11 +9,11 @@ EditorBuildSettings:
     path: Assets/Scenes/MenuInicio.unity
     guid: 16d94d38286c7d84493055db38bc03fa
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 1
     path: Assets/Scenes/PRUEBAS.unity
     guid: 713c812de96973345bb5fb654443cc09
+  - enabled: 1
+    path: Assets/Scenes/AprendeExplorando.unity
+    guid: 5249285fc8eb0934aa5768bea94fbb21
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: e7bd8a48f887a844baa8bca812c15ebb, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: b8f7923411bb614418d554f27f63e967, type: 2}

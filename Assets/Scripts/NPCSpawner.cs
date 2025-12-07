@@ -7,8 +7,10 @@ public class NPCSpawner : MonoBehaviour
     [Header("NPC Base")]
     public GameObject npcBasePrefab;
     public List<GameObject> modelosDisponibles;
-    public int cantidadNPC = 4;
-    public int infectadosIniciales = 1;
+    public int maxNPCs = 6; // Límite de botones
+
+    // Cuántos infectaremos al dar al botón "Iniciar"
+    public int infectadosAlIniciar = 1;
 
     [Header("Spawn Area")]
     public float spawnRadius = 0.35f;
@@ -18,74 +20,97 @@ public class NPCSpawner : MonoBehaviour
 
     void Start()
     {
-        UIManager.Instance?.Log("NPCSpawner: Start ejecutado");
+        // YA NO spawneamos automáticamente aquí.
+        // Solo buscamos referencias.
+        UIManager.Instance?.Log("NPCSpawner: Listo (Esperando comandos de Stage).");
         suelo = transform.Find("Suelo");
-        if (suelo == null)
+    }
+
+    // ---------------------------------------------------------
+    // MÉTODOS NUEVOS PARA LOS BOTONES
+    // ---------------------------------------------------------
+
+    // Se llama con el Botón 1 (Agregar NPC)
+    public void SpawnSingleNPC()
+    {
+        if (npcs.Count >= maxNPCs)
         {
-            UIManager.Instance?.Log("ERROR NPCSpawner: No se encontró 'Suelo'.");
+            UIManager.Instance?.Log("NPCSpawner: Máximo de NPCs alcanzado.");
             return;
         }
 
-        SpawnNPCs();
-        InfectRandom();
-    }
+        if (suelo == null) return;
 
-    void SpawnNPCs()
-    {
-        for (int i = 0; i < cantidadNPC; i++)
+        Vector3 pos = GetRandomPointOnNavMesh();
+        GameObject npc = Instantiate(npcBasePrefab, pos, Quaternion.identity, transform);
+
+        NPCController ctrl = npc.GetComponent<NPCController>();
+        NPCModelLoader loader = npc.GetComponent<NPCModelLoader>();
+
+        if (ctrl != null && loader != null)
         {
-            Vector3 pos = GetRandomPointOnNavMesh();
-
-            GameObject npc = Instantiate(npcBasePrefab, pos, Quaternion.identity, transform);
-
-            NPCController ctrl = npc.GetComponent<NPCController>();
-            NPCModelLoader loader = npc.GetComponent<NPCModelLoader>();
-
-            if (ctrl == null || loader == null)
-            {
-                UIManager.Instance?.Log("ERROR NPCSpawner: NPC_Base necesita NPCController y NPCModelLoader.");
-                Destroy(npc);
-                continue;
-            }
-
+            // 1. Guardar referencia
             npcs.Add(ctrl);
 
-            // asignar modelo
-            GameObject modelPrefab = modelosDisponibles[
-                Random.Range(0, modelosDisponibles.Count)
-            ];
+            // 2. Asignar modelo aleatorio
+            GameObject modelPrefab = modelosDisponibles[Random.Range(0, modelosDisponibles.Count)];
             loader.ApplyModel(modelPrefab);
 
-            // iniciar movimiento
-            ctrl.SetRandomDestination();
-        }
+            // 3. IMPORTANTE: Asegurar que nazca QUIETO
+            ctrl.simulacionActiva = false;
 
-        UIManager.Instance?.Log($"NPCSpawner: Spawned {npcs.Count} NPC(s).");
+            UIManager.Instance?.Log($"NPCSpawner: NPC agregado ({npcs.Count}/{maxNPCs}).");
+        }
     }
+
+    // Se llama con el Botón 2 (Iniciar Infección)
+    public void IniciarSimulacionMasiva()
+    {
+        UIManager.Instance?.Log("NPCSpawner: Iniciando movimiento e infección...");
+
+        // 1. Infectar aleatoriamente a X personajes
+        InfectRandom(infectadosAlIniciar);
+
+        // 2. Despertar a todos
+        foreach (var npc in npcs)
+        {
+            if (npc != null)
+            {
+                npc.ActivarMovimiento(); // Pasa a TRUE y busca destino
+            }
+        }
+    }
+
+    // ---------------------------------------------------------
+    // UTILIDADES (Igual que antes)
+    // ---------------------------------------------------------
 
     Vector3 GetRandomPointOnNavMesh()
     {
         Vector3 rnd = Random.insideUnitSphere * spawnRadius;
-        rnd += suelo.position;
-        rnd.y = suelo.position.y + 0.05f;
+        if (suelo != null)
+        {
+            rnd += suelo.position;
+            rnd.y = suelo.position.y + 0.05f;
+        }
 
         NavMeshHit hit;
         if (NavMesh.SamplePosition(rnd, out hit, 0.4f, NavMesh.AllAreas))
             return hit.position;
 
-        return suelo.position + new Vector3(0, 0.05f, 0);
+        return (suelo != null) ? suelo.position : transform.position;
     }
 
-    void InfectRandom()
+    void InfectRandom(int cantidad)
     {
-        if (infectadosIniciales <= 0) return;
+        if (npcs.Count == 0) return;
 
-        for (int i = 0; i < infectadosIniciales; i++)
+        // Mezclamos un poco para que no siempre sea el primero
+        for (int k = 0; k < cantidad; k++)
         {
-            if (npcs.Count == 0) break;
             int index = Random.Range(0, npcs.Count);
+            // Intentamos infectar (si ya está, no pasa nada)
             npcs[index].Infect();
-            UIManager.Instance?.Log($"NPCSpawner: Infectado inicial -> {npcs[index].name}");
         }
     }
 }

@@ -588,6 +588,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugText: {fileID: 0}
+  panelTransicion: {fileID: 0}
   audioSource: {fileID: 406354655}
   abrir_panel: {fileID: 0}
   cerrar_panel: {fileID: 0}
@@ -778,7 +779,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 406354654}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: AbrirEscenaExplorar
+        m_MethodName: AbrirEscenaConoceTuCuerpo
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1451,7 +1452,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 406354654}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: AbrirEscenaNarracion
+        m_MethodName: AbrirEscenaAprendeExplorando
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

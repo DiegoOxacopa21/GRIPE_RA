@@ -12,6 +12,9 @@ public class NPCController : MonoBehaviour
     public bool isInfected = false;
     public Color infectedColor = Color.red;
 
+    // NUEVO: Controla si se pueden mover o no
+    public bool simulacionActiva = false;
+
     private NavMeshAgent agent;
     private Animator animator;
     private Renderer[] renderers;
@@ -23,10 +26,11 @@ public class NPCController : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
 
-        agent.speed = Random.Range(0.25f, 0.45f);  // lento NATURAL para escala 0.1
+        // Configuración original
+        agent.speed = Random.Range(0.25f, 0.45f);
         agent.acceleration = 10f;
         agent.angularSpeed = 110f;
-        agent.updateRotation = false; // rotación manual evita caminar hacia atrás
+        agent.updateRotation = false; // rotación manual
     }
 
     void Start()
@@ -47,11 +51,19 @@ public class NPCController : MonoBehaviour
         {
             UIManager.Instance?.Log($"NPCController: No se encontró NPCModelLoader en {name}.");
         }
+
+        // Si nace infectado, actualizar color visualmente aunque esté quieto
+        if (isInfected) ActualizarColorInfeccion();
     }
 
     void Update()
     {
+        // 1. NUEVO: Si la simulación no ha iniciado, no hacemos lógica de movimiento/idle
+        if (!simulacionActiva) return;
+
+        // 2. Si está hablando, no se mueve
         if (isTalking) return;
+
         if (animator == null) return;
 
         UpdateMovementState();
@@ -73,8 +85,6 @@ public class NPCController : MonoBehaviour
         }
     }
 
-    // -- SE QUITA la creación de cubos de debug; ahora se informa vía UIManager --
-
     public bool IsTalking()
     {
         return isTalking;
@@ -91,6 +101,9 @@ public class NPCController : MonoBehaviour
 
     public void SetRandomDestination()
     {
+        // NUEVO: Doble seguridad para no moverse si está pausado
+        if (!simulacionActiva) return;
+
         idleTimer = Random.Range(minIdleTime, maxIdleTime);
 
         Vector3 dir = Random.insideUnitSphere * wanderRadius;
@@ -102,14 +115,19 @@ public class NPCController : MonoBehaviour
         if (NavMesh.SamplePosition(dir, out hit, wanderRadius, NavMesh.AllAreas))
         {
             agent.SetDestination(hit.position);
-
-            // debug sencillo por UI
-            //UIManager.Instance?.Log($"NPCController: {name} -> nuevo destino: {hit.position.ToString("F3")}");
+            // UIManager.Instance?.Log($"NPCController: {name} -> nuevo destino.");
         }
     }
 
+    // NUEVO: Método para que NPCSpawner active a este personaje
+    public void ActivarMovimiento()
+    {
+        simulacionActiva = true;
+        SetRandomDestination(); // Empezar a caminar inmediatamente
+    }
+
     // -------------------------------------------------------
-    // CONVERSACIÓN
+    // CONVERSACIÓN (Restaurado)
     // -------------------------------------------------------
 
     public void StartTalking(Transform lookTarget)
@@ -124,27 +142,33 @@ public class NPCController : MonoBehaviour
 
             if (d != Vector3.zero)
             {
-                Quaternion rot = Quaternion.LookRotation(d);
-                transform.rotation = Quaternion.Slerp(transform.rotation, rot, 8f * Time.deltaTime);
+                // Rotación instantánea o suavizada hacia quien habla
+                transform.rotation = Quaternion.LookRotation(d);
             }
         }
 
-        animator.SetBool("IsTalking", true);
-        animator.SetFloat("MoveSpeed", 0f);
-
-        //UIManager.Instance?.Log($"NPCController: {name} StartTalking.");
+        if (animator != null)
+        {
+            animator.SetBool("IsTalking", true);
+            animator.SetFloat("MoveSpeed", 0f);
+        }
     }
 
     public void StopTalking()
     {
         isTalking = false;
-        agent.isStopped = false;
-        animator.SetBool("IsTalking", false);
+
+        // Solo reanudamos el agente si la simulación sigue activa
+        if (agent.isActiveAndEnabled) agent.isStopped = false;
+
+        if (animator != null)
+            animator.SetBool("IsTalking", false);
 
         idleTimer = 0f;
-        SetRandomDestination();
 
-        //UIManager.Instance?.Log($"NPCController: {name} StopTalking.");
+        // Si la simulación sigue activa, buscamos nuevo destino
+        if (simulacionActiva)
+            SetRandomDestination();
     }
 
     // -------------------------------------------------------
@@ -158,13 +182,15 @@ public class NPCController : MonoBehaviour
         isInfected = true;
 
         UIManager.Instance?.Log($"NPCController: {name} Infectado.");
+        ActualizarColorInfeccion();
+    }
 
+    void ActualizarColorInfeccion()
+    {
         if (renderers != null)
         {
             foreach (var r in renderers)
             {
-                // clonar material para evitar instancias compartidas si quieres,
-                // pero por ahora mantenemos color directo (igual que antes)
                 r.material.color = infectedColor;
             }
         }

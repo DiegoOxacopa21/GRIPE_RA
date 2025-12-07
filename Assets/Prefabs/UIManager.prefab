@@ -295,7 +295,7 @@ GameObject:
   - component: {fileID: 5911897607506766114}
   - component: {fileID: 5911897607506766115}
   m_Layer: 5
-  m_Name: Canva_PantallaEstandar
+  m_Name: UIManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
