@@ -11,9 +11,8 @@ public class GameManager : MonoBehaviour
     private StageBase currentStage;
 
     [Header("Canales de Audio (GameManager)")]
-    // Estos son INDEPENDIENTES del AudioSource que tienes en UIManager
-    public AudioSource sfxSource;   // Arrastra aquí el AudioSource para narraciones/efectos
-    public AudioSource musicSource; // Arrastra aquí el AudioSource para música de fondo
+    public AudioSource sfxSource;
+    public AudioSource musicSource;
 
     private void Awake()
     {
@@ -23,13 +22,11 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Apagar todas al inicio por seguridad
         foreach (var stage in stagesList)
         {
             if (stage != null) stage.gameObject.SetActive(false);
         }
 
-        // Iniciar la primera
         if (stagesList.Count > 0)
         {
             currentStageIndex = 0;
@@ -51,10 +48,14 @@ public class GameManager : MonoBehaviour
 
     public void AvanzarEtapa()
     {
+        // --- CORRECCIÓN 1: LIMPIEZA DE AUDIO ---
+        // Detenemos cualquier narración que esté sonando antes de cerrar la etapa
+        if (sfxSource.isPlaying) sfxSource.Stop();
+
         // 1. Cerrar etapa actual
         if (currentStage != null)
         {
-            currentStage.EndStage(); // Aquí sonará el 'audioAlTerminar'
+            currentStage.EndStage();
             currentStage.gameObject.SetActive(false);
         }
 
@@ -69,7 +70,8 @@ public class GameManager : MonoBehaviour
         else
         {
             UIManager.Instance?.Log("--- JUEGO TERMINADO ---");
-            // Aquí podrías llamar a UIManager para abrir panel de fin o volver al menú
+            // Opcional: Detener música también si el juego acaba
+            // if (musicSource.isPlaying) musicSource.Stop();
         }
     }
 
@@ -77,16 +79,23 @@ public class GameManager : MonoBehaviour
     {
         currentStage = stagesList[index];
         currentStage.gameObject.SetActive(true);
-        currentStage.InitStage(); // Aquí sonará 'audioAlIniciar' y 'musicaDeFondo'
+        currentStage.InitStage();
     }
 
-    // --- LÓGICA DE AUDIO GLOBAL ---
+    // --- LÓGICA DE AUDIO GLOBAL CORREGIDA ---
 
     public void ReproducirSFX(AudioClip clip)
     {
         if (clip != null && sfxSource != null)
         {
-            sfxSource.PlayOneShot(clip);
+            // --- CORRECCIÓN 2: MODO NARRADOR ---
+            // En lugar de PlayOneShot (que mezcla sonidos), usamos Play() normal.
+            // Esto reemplaza el clip actual con el nuevo, cortando automáticamente el anterior.
+            // Ideal para diálogos de ElevenLabs para que no se atropellen.
+
+            sfxSource.Stop();        // Detiene el anterior por seguridad
+            sfxSource.clip = clip;   // Asigna el nuevo
+            sfxSource.Play();        // Reproduce
         }
     }
 
@@ -96,7 +105,6 @@ public class GameManager : MonoBehaviour
         {
             if (clip != null)
             {
-                // Solo cambiamos si es una canción diferente para evitar cortes
                 if (musicSource.clip != clip)
                 {
                     musicSource.clip = clip;
